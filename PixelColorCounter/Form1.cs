@@ -10,18 +10,27 @@ namespace PixelColorCounter
 {
     public partial class Form1 : Form
     {
+        private const int ConstWidth = 425;
         private const int MaxHeight = 800;
+        private const int ColorBlockSize = 40;
+        private const int ColorBlockTotalSpace = 45;
+        private const int TextOffset = 5;
+
+        //properties used in resizing
+        private readonly int DiffHeight;
 
         private Dictionary<Color, int> PixelColorCount { get; set; }
         private int TotalPixelCount { get; set; }
+        private Form2 ImageViewer { get; set; }
 
         /// <summary>
-        /// initialize the form
+        /// Initialize the color count form
         /// </summary>
         public Form1()
         {
             PixelColorCount = new();
             TotalPixelCount = 0;
+            ImageViewer = null;
             InitializeComponent();
 
             //update combobox items
@@ -33,6 +42,9 @@ namespace PixelColorCounter
             this.comboBox1.DisplayMember = "Text";
             this.comboBox1.ValueMember = "Id";
             this.comboBox1.DataSource = items;
+
+            //get the difference in size between the form and the picture box
+            DiffHeight = this.Height - pictureBox1.Height;
         }
 
         /// <summary>
@@ -48,23 +60,23 @@ namespace PixelColorCounter
 
                 using Font myFont = new("Arial", 14);
                 var graphics = e.Graphics;
-                graphics.DrawString($"Total Pixels: {TotalPixelCount}\tTotalColors: {PixelColorCount.Count}", myFont, Brushes.Black, new Point(0, 5));
+                graphics.DrawString($"Total Pixels: {TotalPixelCount}\u00A0\u00A0\u00A0\u00A0\u00A0Total Colors: {PixelColorCount.Count}", myFont, Brushes.Black, new Point(0, TextOffset));
 
                 int i = 1; //start at 1 to offset the Total count
                 foreach (var kvp in PixelColorCount)
                 {
-                    Rectangle rect = new(0, i * 45, 40, 40);
+                    Rectangle rect = new(0, i * ColorBlockTotalSpace, ColorBlockSize, ColorBlockSize);
                     SolidBrush brush = new(kvp.Key);
                     graphics.FillRectangle(brush, rect);
 
                     //only draw RGB values if requested
                     if (checkBox1.Checked)
                     {
-                        graphics.DrawString($"{kvp.Value}\t\t(R:{kvp.Key.R},\tG:{kvp.Key.G},\tB:{kvp.Key.B})", myFont, Brushes.Black, new Point(45, (i * 45) + 5));
+                        graphics.DrawString($"{kvp.Value}\t\t(R:{kvp.Key.R},\tG:{kvp.Key.G},\tB:{kvp.Key.B})", myFont, Brushes.Black, new Point(ColorBlockTotalSpace, (i * ColorBlockTotalSpace) + TextOffset));
                     }
                     else
                     {
-                        graphics.DrawString($"{kvp.Value}\t", myFont, Brushes.Black, new Point(45, (i * 45) + 5));
+                        graphics.DrawString($"{kvp.Value}\t", myFont, Brushes.Black, new Point(ColorBlockTotalSpace, (i * ColorBlockTotalSpace) + TextOffset));
                     }
 
                     i += 1;
@@ -97,10 +109,16 @@ namespace PixelColorCounter
         }
 
         /// <summary>
-        /// reads the image and builds our pixel color count dictionary and total pixel count when a file is selected
+        /// Reads the image and builds our pixel color count dictionary and total pixel count when a file is selected
         /// </summary>
         private void OpenFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
+            if (ImageViewer != null && ImageViewer.Visible)
+            {
+                ImageViewer.Close();
+                ImageViewer.Dispose();
+            }
+
             using Bitmap img = new(openFileDialog1.FileName);
             if (img != null)
             {
@@ -133,6 +151,12 @@ namespace PixelColorCounter
                 AutoResize();
                 pictureBox1.Refresh();
             }
+
+            if (checkBox2.Checked)
+            {
+                ImageViewer = new(openFileDialog1.FileName);
+                ImageViewer.Show();
+            }
         }
 
         /// <summary>
@@ -140,12 +164,12 @@ namespace PixelColorCounter
         /// </summary>
         private void AutoResize()
         {
-            var height = (PixelColorCount.Count * 45) + 45;
-            pictureBox1.Size = new(425 - (SystemInformation.VerticalScrollBarWidth + 4), height);
+            var height = (PixelColorCount.Count * ColorBlockTotalSpace) + ColorBlockTotalSpace;
+            pictureBox1.Size = new(ConstWidth, height);
 
             height = (height > MaxHeight)
                 ? MaxHeight
-                : (height += 112);
+                : (height += DiffHeight);
 
             this.Size = new(this.Width, height);
         }
