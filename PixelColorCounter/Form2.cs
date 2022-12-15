@@ -8,7 +8,7 @@ namespace PixelColorCounter
     public partial class Form2 : Form
     {
         //constants for max and min form size
-        private const int MinWidth = 385;
+        private const int MinWidth = 250;
         private const int MaxWidth = 800;
         private const int MinHeight = 300;
         private const int MaxHeight = 800;
@@ -30,7 +30,7 @@ namespace PixelColorCounter
         /// <param name="imagePath">path to the image the form shows</param>
         /// <param name="startX">starting X position for the form</param>
         /// <param name="startY">starting Y position for the form</param>
-        public Form2(string imagePath, int startX, int startY)
+        public Form2(string imagePath, int startX, int startY, bool highlightInSpecificColor, Color highlightColor)
         {
             ImagePath = imagePath;
             if (!string.IsNullOrEmpty(ImagePath))
@@ -39,8 +39,8 @@ namespace PixelColorCounter
             }
             ZoomLevel = 1; //default to no zoom
             ColorToHighlight = null;
-            HighlightInSpecificColor = false;
-            HighlightColor = Color.Red;
+            HighlightInSpecificColor = highlightInSpecificColor;
+            HighlightColor = highlightColor;
 
             InitializeComponent();
 
@@ -214,10 +214,10 @@ namespace PixelColorCounter
         /// <summary>
         /// If set, highlights the color to highlight in red
         /// </summary>
-        /// <param name="highlightInRed">whether or not to highlight in red</param>
-        public void HighlightPixelInRed(bool highlightInRed)
+        /// <param name="useSpecificColor">whether or not to highlight in the selected color</param>
+        public void SetHighlightType(bool useSpecificColor)
         {
-            HighlightInSpecificColor = highlightInRed;
+            HighlightInSpecificColor = useSpecificColor;
 
             pictureBox1.Refresh();
         }
@@ -306,7 +306,12 @@ namespace PixelColorCounter
             try
             {
                 var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
-                HighlightPixels(pixel);
+
+                //only highlight non transparent pixels
+                if (pixel.A > 0)
+                {
+                    HighlightPixels(pixel);
+                }
             }
             catch //ignore any exceptions here
             {
@@ -314,17 +319,14 @@ namespace PixelColorCounter
         }
 
         /// <summary>
-        /// Dialog to set the highlight color
+        /// Sets the color to use in highlighting
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Button1_Click(object sender, EventArgs e)
+        /// <param name="colorToUse">Color to use for highlighting</param>
+        public void SetHighlightColor(Color colorToUse)
         {
-            if(colorDialog1.ShowDialog() == DialogResult.OK)
-            {
-                HighlightColor = colorDialog1.Color;
-                pictureBox1.Refresh();
-            }
+            HighlightColor = colorToUse;
+
+            pictureBox1.Refresh();
         }
     }
 }

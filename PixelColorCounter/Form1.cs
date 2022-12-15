@@ -70,7 +70,7 @@ namespace PixelColorCounter
                 foreach (var kvp in PixelColorCount)
                 {
                     Rectangle rect = new(0, i * ColorBlockTotalSpace, ColorBlockSize, ColorBlockSize);
-                    SolidBrush brush = new(kvp.Key);
+                    using SolidBrush brush = new(kvp.Key);
                     graphics.FillRectangle(brush, rect);
 
                     //only draw RGB values if requested
@@ -158,7 +158,7 @@ namespace PixelColorCounter
 
             if (checkBox2.Checked)
             {
-                ImageViewer = new(openFileDialog1.FileName, (this.Location.X + this.Width), this.Location.Y);
+                ImageViewer = new(openFileDialog1.FileName, (this.Location.X + this.Width), this.Location.Y, checkBox3.Checked, colorDialog1.Color);
                 ImageViewer.Show();
             }
         }
@@ -267,12 +267,48 @@ namespace PixelColorCounter
             return false;
         }
 
+        /// <summary>
+        /// Set if pixels are highlighted in a certain color or not
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CheckBox3_CheckedChanged(object sender, EventArgs e)
         {
             if (ImageViewer != null)
             {
-                ImageViewer.HighlightPixelInRed(checkBox3.Checked);
+                ImageViewer.SetHighlightType(checkBox3.Checked);
             }
+        }
+
+        /// <summary>
+        /// Change the highlight color
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                pictureBox2.Refresh();
+
+                if (ImageViewer != null)
+                {
+                    ImageViewer.SetHighlightColor(colorDialog1.Color);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Update thhe color display for the highlighted color
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PictureBox2_Paint(object sender, PaintEventArgs e)
+        {
+            var graphics = e.Graphics;
+            Rectangle rect = new(0, 0, pictureBox2.Width, pictureBox2.Height);
+            using SolidBrush brush = new(colorDialog1.Color);
+            graphics.FillRectangle(brush, rect);
         }
     }
 }
