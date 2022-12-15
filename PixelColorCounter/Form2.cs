@@ -292,5 +292,22 @@ namespace PixelColorCounter
                 trackBar1.Value -= 1;
             }
         }
+
+        /// <summary>
+        /// Highlights the color of the image that was clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
+                HighlightColor(pixel);
+            }
+            catch //ignore any exceptions here
+            {
+            }
+        }
     }
 }
