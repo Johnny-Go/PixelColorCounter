@@ -20,12 +20,14 @@ namespace PixelColorCounter
         private string ImagePath { get; set; } 
         private int ZoomLevel { get; set; }
         private Bitmap Img { get; set; }
+        private Color? ColorToHighlight { get; set; }
+        private bool HighlightInRed { get; set; }
 
         /// <summary>
         /// Initialize the image form
         /// </summary>
         /// <param name="imagePath">path to the image the form shows</param>
-        public Form2(string imagePath)
+        public Form2(string imagePath, int startX, int startY)
         {
             ImagePath = imagePath;
             if (!string.IsNullOrEmpty(ImagePath))
@@ -33,7 +35,14 @@ namespace PixelColorCounter
                 Img = new(ImagePath);
             }
             ZoomLevel = 1; //default to no zoom
+            ColorToHighlight = null;
+            HighlightInRed = false;
+
             InitializeComponent();
+
+            //set start position
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = new Point(startX, startY);
 
             //get the difference in size between the form and the picture box
             DiffWidth = this.Width - pictureBox1.Width;
@@ -48,21 +57,39 @@ namespace PixelColorCounter
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             var graphics = e.Graphics;
+            if (ColorToHighlight != null)
+            {
+                using Bitmap highlightedImage = GrayScaleHighlight();
+                DrawImage(graphics, highlightedImage);
+            }
+            else
+            {
+                DrawImage(graphics, Img);
+            }
+        }
 
+        /// <summary>
+        /// Function to do the actual drawing
+        /// </summary>
+        /// <param name="graphics">graphics object ot do the drawing</param>
+        /// <param name="image">image to draw</param>
+        private void DrawImage(Graphics graphics, Bitmap image)
+        {
+            var width = image.Width;
+            var height = image.Height;
+
+            //update the draw settings if the image is zoomed
             if (ZoomLevel > 1)
             {
-                Size newSize = new(Img.Width * ZoomLevel, Img.Height * ZoomLevel);
-                using Bitmap zoomedImg = new(Img, newSize);
+                width = image.Width * ZoomLevel;
+                height = image.Height * ZoomLevel;
 
                 graphics.SmoothingMode = SmoothingMode.None;
                 graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                graphics.DrawImage(Img, 0, 0, zoomedImg.Width, zoomedImg.Height);
             }
-            else
-            {
-                graphics.DrawImage(Img, 0, 0, Img.Width, Img.Height);
-            }
+
+            graphics.DrawImage(image, 0, 0, width, height);
         }
 
         /// <summary>
@@ -130,7 +157,8 @@ namespace PixelColorCounter
             try
             {
                 var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
-                if (pixel.A > 0)
+
+                if (pixel.A > 0 && (ColorToHighlight == null || ColorToHighlight == pixel))
                 {
                     toolTip1.BackColor = pixel;
                     //got this calculation for determine white or black text from: https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
@@ -139,7 +167,7 @@ namespace PixelColorCounter
                         : Color.White;
                     toolTip1.SetToolTip(pictureBox1, $"R:{pixel.R}, G:{pixel.G}, B:{pixel.B}");
                 }
-                else //don't display tooltip for transparent pixels
+                else //don't display tooltip for transparent pixels, or pixels that don't match the highlighted color
                 {
                     toolTip1.BackColor = SystemColors.Info;
                     toolTip1.ForeColor = SystemColors.InfoText;
@@ -164,6 +192,105 @@ namespace PixelColorCounter
             e.DrawBackground();
             e.DrawBorder();
             e.DrawText();
+        }
+
+        /// <summary>
+        /// Sets the color to highlight or clears it and redraws
+        /// </summary>
+        /// <param name="color">Color to highlight</param>
+        public void HighlightColor(Color color)
+        {
+            ColorToHighlight = (ColorToHighlight != null && ColorToHighlight == color)
+                ? null
+                : color; 
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// If set, highlights the color to highlight in red
+        /// </summary>
+        /// <param name="highlightInRed">whether or not to highlight in red</param>
+        public void HighlightPixelInRed(bool highlightInRed)
+        {
+            HighlightInRed = highlightInRed;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Gets a Bitmap of the Image grayscaled except for any highlighted color
+        /// Grayscale code from here: https://stackoverflow.com/questions/2265910/convert-an-image-to-grayscale
+        /// </summary>
+        /// <returns>Grayscaled Bitmap of the iamge, or null if no highlight is selected</returns>
+        private Bitmap GrayScaleHighlight()
+        {
+            if (!ColorToHighlight.HasValue)
+            {
+                return null;
+            }
+            
+            Bitmap highlightedImage = new(Img.Width, Img.Height);
+
+            // Loop through the images pixels to reset color.
+            for (int x = 0; x < Img.Width; x++)
+            {
+                for (int y = 0; y < Img.Height; y++)
+                {
+                    //get the pixel from the original image
+                    Color originalColor = Img.GetPixel(x, y);
+
+                    //ignore transparent pixels
+                    if (originalColor.A != 0)
+                    {
+                        //don't grayscale the color to highlight
+                        if (originalColor == ColorToHighlight)
+                        {
+                            if (HighlightInRed)
+                            {
+                                //set the new image's pixel to the grayscale version
+                                highlightedImage.SetPixel(x, y, Color.Red);
+                            }
+                            else
+                            {
+                                highlightedImage.SetPixel(x, y, ColorToHighlight.Value);
+                            }
+                        }
+                        else
+                        {
+                            //create the grayscale version of the pixel
+                            int grayScale = (int)((originalColor.R * 0.3) + (originalColor.G * 0.59) + (originalColor.B * 0.11));
+
+                            //create the color object
+                            Color newColor = Color.FromArgb(grayScale, grayScale, grayScale);
+
+                            //set the new image's pixel to the grayscale version
+                            highlightedImage.SetPixel(x, y, newColor);
+                        }
+                    }
+                }
+            }
+
+            return highlightedImage;
+        }
+
+        /// <summary>
+        /// Handle Mouse Wheel on the trackbar nicely
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TrackBar1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ((HandledMouseEventArgs)e).Handled = true; //disable normal mouse wheel event
+
+            if ((e.Delta > 0) && (trackBar1.Value < trackBar1.Maximum))
+            {
+                trackBar1.Value += 1;
+            }
+            else if ((e.Delta < 0) && (trackBar1.Value > trackBar1.Minimum))
+            {
+                trackBar1.Value -= 1;
+            }
         }
     }
 }

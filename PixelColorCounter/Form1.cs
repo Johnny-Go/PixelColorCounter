@@ -33,6 +33,10 @@ namespace PixelColorCounter
             ImageViewer = null;
             InitializeComponent();
 
+            //set start position
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = new Point(400, 300);
+
             //update combobox items
             List<ComboBoxListItem> items = new()
             {
@@ -154,7 +158,7 @@ namespace PixelColorCounter
 
             if (checkBox2.Checked)
             {
-                ImageViewer = new(openFileDialog1.FileName);
+                ImageViewer = new(openFileDialog1.FileName, (this.Location.X + this.Width), this.Location.Y);
                 ImageViewer.Show();
             }
         }
@@ -212,6 +216,63 @@ namespace PixelColorCounter
         private void Form1_Resize(object sender, EventArgs e)
         {
             pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Call the highlight function if a color is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                if (XValueValid(e.X) && YValueValid(e.Y))
+                {
+                    //convert the picturebox to a bitmap, and grab the color that was clicked
+                    using Bitmap bmp = new(ColorBlockSize, pictureBox1.Height);
+                    pictureBox1.DrawToBitmap(bmp, pictureBox1.ClientRectangle);
+                    var pixel = bmp.GetPixel(e.X, e.Y);
+                    ImageViewer.HighlightColor(pixel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if the X value for a click is over a color block
+        /// </summary>
+        /// <param name="xValue">X value for a click</param>
+        /// <returns>true if a color was clicked, false otherwise</returns>
+        private static bool XValueValid(int xValue)
+        {
+            return (xValue >= 0) && (xValue < ColorBlockSize);
+        }
+
+        /// <summary>
+        /// Check if the Y value for a click is over a color block
+        /// </summary>
+        /// <param name="yValue">Y value for a click</param>
+        /// <returns>true if a color was clicked, false otherwise</returns>
+        private bool YValueValid(int yValue)
+        {
+            //basically we loop over every possible color, then if the y value clicked is within the 40 vertical pixels for the color we say it's valid
+            for (int i = 1; i <= PixelColorCount.Count; i++)
+            {
+                if(yValue >= (i * ColorBlockTotalSpace) && yValue < (i * ColorBlockTotalSpace + ColorBlockSize))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void CheckBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.HighlightPixelInRed(checkBox3.Checked);
+            }
         }
     }
 }

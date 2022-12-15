@@ -18,7 +18,11 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
-            Img.Dispose();
+
+            if (Img != null)
+            {
+                Img.Dispose();
+            }
         }
 
         #region Windows Form Designer generated code
@@ -57,6 +61,7 @@
             this.trackBar1.Size = new System.Drawing.Size(185, 45);
             this.trackBar1.TabIndex = 1;
             this.trackBar1.ValueChanged += new System.EventHandler(this.TrackBar1_ValueChanged);
+            this.trackBar1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.TrackBar1_MouseWheel);
             // 
             // label1
             // 
