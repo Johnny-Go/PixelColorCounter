@@ -124,9 +124,9 @@
             this.checkBox3.AutoSize = true;
             this.checkBox3.Location = new System.Drawing.Point(306, 48);
             this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(142, 19);
+            this.checkBox3.Size = new System.Drawing.Size(154, 19);
             this.checkBox3.TabIndex = 6;
-            this.checkBox3.Text = "Highlight pixels in red";
+            this.checkBox3.Text = "Highlight pixels in Color";
             this.checkBox3.UseVisualStyleBackColor = true;
             this.checkBox3.CheckedChanged += new System.EventHandler(this.CheckBox3_CheckedChanged);
             // 

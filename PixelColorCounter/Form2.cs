@@ -8,7 +8,7 @@ namespace PixelColorCounter
     public partial class Form2 : Form
     {
         //constants for max and min form size
-        private const int MinWidth = 250;
+        private const int MinWidth = 385;
         private const int MaxWidth = 800;
         private const int MinHeight = 300;
         private const int MaxHeight = 800;
@@ -21,12 +21,15 @@ namespace PixelColorCounter
         private int ZoomLevel { get; set; }
         private Bitmap Img { get; set; }
         private Color? ColorToHighlight { get; set; }
-        private bool HighlightInRed { get; set; }
+        private bool HighlightInSpecificColor { get; set; }
+        private Color HighlightColor { get; set; }
 
         /// <summary>
         /// Initialize the image form
         /// </summary>
         /// <param name="imagePath">path to the image the form shows</param>
+        /// <param name="startX">starting X position for the form</param>
+        /// <param name="startY">starting Y position for the form</param>
         public Form2(string imagePath, int startX, int startY)
         {
             ImagePath = imagePath;
@@ -36,7 +39,8 @@ namespace PixelColorCounter
             }
             ZoomLevel = 1; //default to no zoom
             ColorToHighlight = null;
-            HighlightInRed = false;
+            HighlightInSpecificColor = false;
+            HighlightColor = Color.Red;
 
             InitializeComponent();
 
@@ -115,7 +119,7 @@ namespace PixelColorCounter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void TrackBar1_ValueChanged(object sender, System.EventArgs e)
+        private void TrackBar1_ValueChanged(object sender, EventArgs e)
         {
             ZoomLevel = (trackBar1.Value == 0) ? 1 : (int)Math.Pow(2, trackBar1.Value);
             label1.Text = $"x{ZoomLevel}";
@@ -198,7 +202,7 @@ namespace PixelColorCounter
         /// Sets the color to highlight or clears it and redraws
         /// </summary>
         /// <param name="color">Color to highlight</param>
-        public void HighlightColor(Color color)
+        public void HighlightPixels(Color color)
         {
             ColorToHighlight = (ColorToHighlight != null && ColorToHighlight == color)
                 ? null
@@ -213,7 +217,7 @@ namespace PixelColorCounter
         /// <param name="highlightInRed">whether or not to highlight in red</param>
         public void HighlightPixelInRed(bool highlightInRed)
         {
-            HighlightInRed = highlightInRed;
+            HighlightInSpecificColor = highlightInRed;
 
             pictureBox1.Refresh();
         }
@@ -246,10 +250,9 @@ namespace PixelColorCounter
                         //don't grayscale the color to highlight
                         if (originalColor == ColorToHighlight)
                         {
-                            if (HighlightInRed)
+                            if (HighlightInSpecificColor)
                             {
-                                //set the new image's pixel to the grayscale version
-                                highlightedImage.SetPixel(x, y, Color.Red);
+                                highlightedImage.SetPixel(x, y, HighlightColor);
                             }
                             else
                             {
@@ -303,10 +306,24 @@ namespace PixelColorCounter
             try
             {
                 var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
-                HighlightColor(pixel);
+                HighlightPixels(pixel);
             }
             catch //ignore any exceptions here
             {
+            }
+        }
+
+        /// <summary>
+        /// Dialog to set the highlight color
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            if(colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                HighlightColor = colorDialog1.Color;
+                pictureBox1.Refresh();
             }
         }
     }

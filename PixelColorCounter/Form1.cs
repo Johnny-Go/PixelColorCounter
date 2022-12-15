@@ -233,7 +233,7 @@ namespace PixelColorCounter
                     using Bitmap bmp = new(ColorBlockSize, pictureBox1.Height);
                     pictureBox1.DrawToBitmap(bmp, pictureBox1.ClientRectangle);
                     var pixel = bmp.GetPixel(e.X, e.Y);
-                    ImageViewer.HighlightColor(pixel);
+                    ImageViewer.HighlightPixels(pixel);
                 }
             }
         }
