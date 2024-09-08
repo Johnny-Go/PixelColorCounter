@@ -19,10 +19,17 @@ namespace PixelColorCounter
         
         private string ImagePath { get; set; } 
         private int ZoomLevel { get; set; }
-        private Bitmap Img { get; set; }
+        private Bitmap OriginalImg { get; set; }
+        private Bitmap CurrentImg { get; set; }
         private Color? ColorToHighlight { get; set; }
         private bool HighlightInSpecificColor { get; set; }
         private Color HighlightColor { get; set; }
+        private bool AddGrid { get; set; }
+        private bool GridDrawn { get; set; }
+        private int GridXSize { get; set; }
+        private int GridYSize { get; set; }
+        private int GridXOffset { get; set; }
+        private int GridYOffset { get; set; }
 
         /// <summary>
         /// Initialize the image form
@@ -30,17 +37,42 @@ namespace PixelColorCounter
         /// <param name="imagePath">path to the image the form shows</param>
         /// <param name="startX">starting X position for the form</param>
         /// <param name="startY">starting Y position for the form</param>
-        public Form2(string imagePath, int startX, int startY, bool highlightInSpecificColor, Color highlightColor)
+        /// <param name="highlightInSpecificColor">whether or not hightling a color uses the color from the color picker</param>
+        /// <param name="highlightColor">color to highlight with if doing so</param>
+        /// <param name="addGrid">whether or not to overlay a grid</param>
+        /// <param name="gridXSize">width of the grid to add</param>
+        /// <param name="gridYSize">height of the grid to add</param>
+        /// <param name="gridXOffset">amount to offset the grids width</param>
+        /// <param name="gridYOffset">amount to offset the grids height</param>
+        public Form2(string imagePath, int startX, int startY, bool highlightInSpecificColor, Color highlightColor, bool addGrid, int gridXSize, int gridYSize, int  gridXOffset, int gridYOffset)
         {
             ImagePath = imagePath;
-            if (!string.IsNullOrEmpty(ImagePath))
-            {
-                Img = new(ImagePath);
-            }
+
             ZoomLevel = 1; //default to no zoom
             ColorToHighlight = null;
             HighlightInSpecificColor = highlightInSpecificColor;
             HighlightColor = highlightColor;
+            AddGrid = addGrid;
+            GridDrawn = false;
+            GridXSize = gridXSize;
+            GridYSize = gridYSize;
+            GridXOffset = gridXOffset;
+            GridYOffset = gridYOffset;
+
+            if (!string.IsNullOrEmpty(ImagePath))
+            {
+                OriginalImg = new(ImagePath);
+                if (AddGrid)
+                {
+                    GridDrawn = true;
+                    using Bitmap grid = AddGridToImage(OriginalImg);
+                    SetCurrentImage(grid);
+                }
+                else
+                {
+                    SetCurrentImage(OriginalImg);
+                }
+            }
 
             InitializeComponent();
 
@@ -61,14 +93,34 @@ namespace PixelColorCounter
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             var graphics = e.Graphics;
+
+            if (AddGrid && !GridDrawn)
+            {
+                GridDrawn = true;
+                using Bitmap grid = AddGridToImage(OriginalImg);
+                SetCurrentImage(grid);
+                ResizeToImage();
+            }
+            //kinda hacky way to allow the user to resize the image if a grid is drawn
+            else if (AddGrid && GridDrawn)
+            {
+                using Bitmap grid = AddGridToImage(OriginalImg);
+                SetCurrentImage(grid);
+            }
+            else
+            {
+                GridDrawn = false;
+                SetCurrentImage(OriginalImg);
+            }
+
             if (ColorToHighlight != null)
             {
-                using Bitmap highlightedImage = GrayScaleHighlight();
+                using Bitmap highlightedImage = GrayScaleHighlight(CurrentImg);
                 DrawImage(graphics, highlightedImage);
             }
             else
             {
-                DrawImage(graphics, Img);
+                DrawImage(graphics, CurrentImg);
             }
         }
 
@@ -101,8 +153,8 @@ namespace PixelColorCounter
         /// </summary>
         private void ResizeToImage()
         {
-            var width = Img.Width * ZoomLevel;
-            var height = Img.Height * ZoomLevel;
+            var width = CurrentImg.Width * ZoomLevel;
+            var height = CurrentImg.Height * ZoomLevel;
 
             //update the picture box size to the image size
             pictureBox1.Size = new(width, height);
@@ -160,7 +212,7 @@ namespace PixelColorCounter
         {
             try
             {
-                var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
+                var pixel = CurrentImg.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
 
                 if (pixel.A > 0 && (ColorToHighlight == null || ColorToHighlight == pixel))
                 {
@@ -226,23 +278,24 @@ namespace PixelColorCounter
         /// Gets a Bitmap of the Image grayscaled except for any highlighted color
         /// Grayscale code from here: https://stackoverflow.com/questions/2265910/convert-an-image-to-grayscale
         /// </summary>
+        /// <param name="startingImage">Image to grayscale highlight</param>
         /// <returns>Grayscaled Bitmap of the iamge, or null if no highlight is selected</returns>
-        private Bitmap GrayScaleHighlight()
+        private Bitmap GrayScaleHighlight(Bitmap startingImage)
         {
             if (!ColorToHighlight.HasValue)
             {
                 return null;
             }
             
-            Bitmap highlightedImage = new(Img.Width, Img.Height);
+            Bitmap highlightedImage = new(startingImage.Width, startingImage.Height);
 
             // Loop through the images pixels to reset color.
-            for (int x = 0; x < Img.Width; x++)
+            for (int x = 0; x < startingImage.Width; x++)
             {
-                for (int y = 0; y < Img.Height; y++)
+                for (int y = 0; y < startingImage.Height; y++)
                 {
                     //get the pixel from the original image
-                    Color originalColor = Img.GetPixel(x, y);
+                    Color originalColor = startingImage.GetPixel(x, y);
 
                     //ignore transparent pixels
                     if (originalColor.A != 0)
@@ -278,6 +331,35 @@ namespace PixelColorCounter
         }
 
         /// <summary>
+        /// Gets a Bitmap of the Image with a grid added
+        /// </summary>
+        /// <param name="startingImage">image to add the grid to</param>
+        /// <returns>Image with a grid over it</returns>
+        private Bitmap AddGridToImage(Bitmap startingImage)
+        {
+            var width = startingImage.Width + ((startingImage.Width + (GridXOffset % GridXSize)) / GridXSize);
+            var height = startingImage.Height + ((startingImage.Height + (GridYOffset % GridYSize)) / GridYSize);
+
+            Bitmap imageWithGrid = new(width, height);
+
+            for (int x = 0; x < startingImage.Width; x++)
+            {
+                var xGridOffset = (x + GridXOffset) / GridXSize;
+                for (int y = 0; y < startingImage.Height; y++)
+                {
+                    var yGridOffset = (y + GridYOffset) / GridYSize;
+
+                    //get the pixel from the original image
+                    Color originalColor = startingImage.GetPixel(x, y);
+
+                    imageWithGrid.SetPixel(x + xGridOffset, y + yGridOffset, originalColor);
+                }
+            }
+
+            return imageWithGrid;
+        }
+
+        /// <summary>
         /// Handle Mouse Wheel on the trackbar nicely
         /// </summary>
         /// <param name="sender"></param>
@@ -305,7 +387,7 @@ namespace PixelColorCounter
         {
             try
             {
-                var pixel = Img.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
+                var pixel = CurrentImg.GetPixel(e.X / ZoomLevel, e.Y / ZoomLevel);
 
                 //only highlight non transparent pixels
                 if (pixel.A > 0)
@@ -327,6 +409,80 @@ namespace PixelColorCounter
             HighlightColor = colorToUse;
 
             pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Sets whether or not to use a grid
+        /// </summary>
+        /// <param name="addGrid">true for grid, false for no grid</param>
+        public void SetGrid(bool addGrid)
+        {
+            AddGrid = addGrid;
+            GridDrawn = false;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Sets the width of the grid
+        /// </summary>
+        /// <param name="gridXSize">width to use for the grid</param>
+        public void SetGridXSize(int gridXSize)
+        {
+            GridXSize = gridXSize;
+            GridDrawn = false;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Sets the height of the grid
+        /// </summary>
+        /// <param name="gridYSize">height to use for the grid</param>
+        public void SetGridYSize(int gridYSize)
+        {
+            GridYSize = gridYSize;
+            GridDrawn = false;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Sets the width offset for the grid
+        /// </summary>
+        /// <param name="gridXSize">amount to offset the width of the grid</param>
+        public void SetGridXOffset(int gridXSize)
+        {
+            GridXOffset = gridXSize;
+            GridDrawn = false;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Sets the height offset for the grid
+        /// </summary>
+        /// <param name="gridYSize">amount to offset the height of the grid</param>
+        public void SetGridYOffset(int gridYSize)
+        {
+            GridYOffset = gridYSize;
+            GridDrawn = false;
+
+            pictureBox1.Refresh();
+        }
+
+        /// <summary>
+        /// Updates the current image and properly disposes of the old one
+        /// </summary>
+        /// <param name="newImage">image to use for the current image</param>
+        private void SetCurrentImage(Bitmap newImage)
+        {
+            if (CurrentImg != null)
+            {
+                CurrentImg.Dispose();
+            }
+
+            CurrentImg = new(newImage);
         }
     }
 }

@@ -158,7 +158,17 @@ namespace PixelColorCounter
 
             if (checkBox2.Checked)
             {
-                ImageViewer = new(openFileDialog1.FileName, (this.Location.X + this.Width), this.Location.Y, checkBox3.Checked, colorDialog1.Color);
+                ImageViewer = new(
+                    openFileDialog1.FileName,
+                    (this.Location.X + this.Width),
+                    this.Location.Y,
+                    checkBox3.Checked,
+                    colorDialog1.Color,
+                    checkBox4.Checked,
+                    Convert.ToInt32(numericUpDown_gridX.Value),
+                    Convert.ToInt32(numericUpDown_gridY.Value),
+                    Convert.ToInt32(numericUpDown_xOffset.Value),
+                    Convert.ToInt32(numericUpDown_yOffset.Value));
                 ImageViewer.Show();
             }
         }
@@ -309,6 +319,55 @@ namespace PixelColorCounter
             Rectangle rect = new(0, 0, pictureBox2.Width, pictureBox2.Height);
             using SolidBrush brush = new(colorDialog1.Color);
             graphics.FillRectangle(brush, rect);
+        }
+
+        private void CheckBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.SetGrid(checkBox4.Checked);
+            }
+
+            numericUpDown_gridX.Enabled = checkBox4.Checked;
+            numericUpDown_gridY.Enabled = checkBox4.Checked;
+            numericUpDown_xOffset.Enabled = checkBox4.Checked;
+            numericUpDown_yOffset.Enabled = checkBox4.Checked;
+        }
+
+        private void NumericUpDown_gridX_ValueChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.SetGridXSize(Convert.ToInt32(numericUpDown_gridX.Value));
+            }
+
+            numericUpDown_xOffset.Maximum = numericUpDown_gridX.Value - 1;
+        }
+
+        private void NumericUpDown_gridY_ValueChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.SetGridYSize(Convert.ToInt32(numericUpDown_gridY.Value));
+            }
+
+            numericUpDown_yOffset.Maximum = numericUpDown_gridY.Value - 1;
+        }
+
+        private void NumericUpDown_xOffset_ValueChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.SetGridXOffset(Convert.ToInt32(numericUpDown_xOffset.Value));
+            }
+        }
+
+        private void NumericUpDown_yOffset_ValueChanged(object sender, EventArgs e)
+        {
+            if (ImageViewer != null)
+            {
+                ImageViewer.SetGridYOffset(Convert.ToInt32(numericUpDown_yOffset.Value));
+            }
         }
     }
 }
