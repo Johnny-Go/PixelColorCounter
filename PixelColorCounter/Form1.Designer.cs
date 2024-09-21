@@ -45,13 +45,26 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.label2 = new System.Windows.Forms.Label();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.numericUpDown_gridX = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown_gridY = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown_xOffset = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown_yOffset = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_gridX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_gridY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_xOffset)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_yOffset)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(13, 103);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 163);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(496, 14);
@@ -91,7 +104,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 48);
+            this.label1.Location = new System.Drawing.Point(13, 49);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(47, 15);
@@ -167,12 +180,124 @@
             this.label2.TabIndex = 9;
             this.label2.Text = "Highlight Color: ";
             // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Location = new System.Drawing.Point(13, 106);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(72, 19);
+            this.checkBox4.TabIndex = 11;
+            this.checkBox4.Text = "Add grid";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.CheckBox4_CheckedChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(108, 107);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(37, 15);
+            this.label3.TabIndex = 12;
+            this.label3.Text = "X Size";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(242, 107);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(37, 15);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "Y Size";
+            // 
+            // numericUpDown_gridX
+            // 
+            this.numericUpDown_gridX.Enabled = false;
+            this.numericUpDown_gridX.Location = new System.Drawing.Point(151, 105);
+            this.numericUpDown_gridX.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown_gridX.Name = "numericUpDown_gridX";
+            this.numericUpDown_gridX.Size = new System.Drawing.Size(63, 23);
+            this.numericUpDown_gridX.TabIndex = 14;
+            this.numericUpDown_gridX.Value = new decimal(new int[] {
+            29,
+            0,
+            0,
+            0});
+            this.numericUpDown_gridX.ValueChanged += new System.EventHandler(this.NumericUpDown_gridX_ValueChanged);
+            // 
+            // numericUpDown_gridY
+            // 
+            this.numericUpDown_gridY.Enabled = false;
+            this.numericUpDown_gridY.Location = new System.Drawing.Point(285, 105);
+            this.numericUpDown_gridY.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown_gridY.Name = "numericUpDown_gridY";
+            this.numericUpDown_gridY.Size = new System.Drawing.Size(63, 23);
+            this.numericUpDown_gridY.TabIndex = 15;
+            this.numericUpDown_gridY.Value = new decimal(new int[] {
+            29,
+            0,
+            0,
+            0});
+            this.numericUpDown_gridY.ValueChanged += new System.EventHandler(this.NumericUpDown_gridY_ValueChanged);
+            // 
+            // numericUpDown_xOffset
+            // 
+            this.numericUpDown_xOffset.Enabled = false;
+            this.numericUpDown_xOffset.Location = new System.Drawing.Point(151, 134);
+            this.numericUpDown_xOffset.Name = "numericUpDown_xOffset";
+            this.numericUpDown_xOffset.Size = new System.Drawing.Size(63, 23);
+            this.numericUpDown_xOffset.TabIndex = 16;
+            this.numericUpDown_xOffset.ValueChanged += new System.EventHandler(this.NumericUpDown_xOffset_ValueChanged);
+            // 
+            // numericUpDown_yOffset
+            // 
+            this.numericUpDown_yOffset.Enabled = false;
+            this.numericUpDown_yOffset.Location = new System.Drawing.Point(285, 134);
+            this.numericUpDown_yOffset.Name = "numericUpDown_yOffset";
+            this.numericUpDown_yOffset.Size = new System.Drawing.Size(63, 23);
+            this.numericUpDown_yOffset.TabIndex = 17;
+            this.numericUpDown_yOffset.ValueChanged += new System.EventHandler(this.NumericUpDown_yOffset_ValueChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(96, 136);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(49, 15);
+            this.label5.TabIndex = 18;
+            this.label5.Text = "X Offset";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(230, 136);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(49, 15);
+            this.label6.TabIndex = 19;
+            this.label6.Text = "Y Offset";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(524, 129);
+            this.ClientSize = new System.Drawing.Size(524, 190);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.numericUpDown_yOffset);
+            this.Controls.Add(this.numericUpDown_xOffset);
+            this.Controls.Add(this.numericUpDown_gridY);
+            this.Controls.Add(this.numericUpDown_gridX);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.button2);
@@ -189,6 +314,10 @@
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_gridX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_gridY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_xOffset)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_yOffset)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -208,6 +337,15 @@
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.CheckBox checkBox4;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown numericUpDown_gridX;
+        private System.Windows.Forms.NumericUpDown numericUpDown_gridY;
+        private System.Windows.Forms.NumericUpDown numericUpDown_xOffset;
+        private System.Windows.Forms.NumericUpDown numericUpDown_yOffset;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }
 

@@ -19,9 +19,14 @@
             }
             base.Dispose(disposing);
 
-            if (Img != null)
+            if (OriginalImg != null)
             {
-                Img.Dispose();
+                OriginalImg.Dispose();
+            }
+
+            if (CurrentImg != null)
+            {
+                CurrentImg.Dispose();
             }
         }
 
